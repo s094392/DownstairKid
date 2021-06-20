@@ -13,16 +13,8 @@ class DownEnv(gym.Env):
 
     def __init__(self):
         super(DownEnv, self).__init__()
-        #  [player_row, player_col
-        #  right_pika_row, right_pika_col,
-        #  ball_row, ball_col,
-        #  last_ball_row, last_ball_col]
         self.observation_space = spaces.Box(
-            low=np.array([0, 0, 0, 0, 0, 0, 0, 0]),
-            high=np.array([HEIGHT, WIDTH, HEIGHT, WIDTH,
-                           HEIGHT, WIDTH, HEIGHT, WIDTH]),
-            dtype=np.float32,
-        )
+            low=0, high=255, shape=(HEIGHT, WIDTH, 1), dtype=np.uint8)
         self.reward_range = (-math.inf, math.inf)
         self.action_space = spaces.Discrete(3)
         self.game = DownGame()
