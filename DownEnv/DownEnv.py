@@ -1,7 +1,9 @@
 import math
+import cv2
 import gym
 from time import sleep
 from gym import spaces
+from torchvision import transforms
 import numpy as np
 from cv2 import cv2 as cv
 from .DownConst import HEIGHT, WIDTH
@@ -26,7 +28,9 @@ class DownEnv(gym.Env):
 
     def reset(self):
         self.game.toggle_start()
-        return np.random.random_sample((8,))
+        img = cv2.cvtColor(self.game.screenshot, cv2.COLOR_RGB2GRAY)
+        img = transforms.ToTensor()(img).float()
+        return img.numpy()
 
     def render(self, mode="human"):
         cv.imshow("Down game", self.game.screenshot)

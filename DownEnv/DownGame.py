@@ -2,6 +2,7 @@ import pdb
 import mss
 import time
 import numpy as np
+from torchvision import transforms
 import os
 import cv2
 import subprocess
@@ -95,8 +96,9 @@ class DownGame(object):
             done = True
 
         img = cv2.cvtColor(self.screenshot, cv2.COLOR_RGB2GRAY)
+        img = transforms.ToTensor()(img).float()
 
-        return img, 1, done
+        return img.numpy(), 1, done
 
     def _update_screenshot(self):
         self.parent_conn.send([])

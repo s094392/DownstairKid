@@ -16,11 +16,11 @@ from dqn import DQN
 MEAN_REWARD_BOUND = 99999999999999999999
 
 gamma = 0.99
-batch_size = 32
-replay_size = 10000
+batch_size = 16
+replay_size = 50
 learning_rate = 1e-3
-sync_target_frames = 1000
-replay_start_size = 10000
+sync_target_frames = 10
+replay_start_size = 50
 
 eps_start = 1.0
 eps_decay = .99985
@@ -65,8 +65,9 @@ class Agent:
         if np.random.random() < epsilon:
             action = self.env.action_space.sample()
         else:
-            # state_a = np.array([self.state], copy=True)
-            state_a = self.state[np.newaxis, ...]
+            print(self.state.shape)
+            state_a = np.array([self.state], copy=False)
+            state_a = self.state
             state_v = torch.tensor(state_a).to(device)
             q_vals_v = net(state_v)
             _, act_v = torch.max(q_vals_v, dim=1)
@@ -74,7 +75,6 @@ class Agent:
 
         self.env.render()
         new_state, reward, is_done, _ = self.env.step(action)
-        new_state = transforms.ToTensor()(new_state)
         self.total_reward += reward
 
         exp = Experience(self.state, action, reward, is_done, new_state)
@@ -141,8 +141,13 @@ def train(device):
 
         batch = buffer.sample(batch_size)
         states, actions, rewards, dones, next_states = batch
+        try:
+            states = states.astype('float64')
+        except:
+            import pdb
+            pdb.set_trace()
 
-        states_v = torch.tensor(states).to(device)
+        states_v = torch.tensor(states).to(device).float()
         next_states_v = torch.tensor(next_states).to(device)
         actions_v = torch.tensor(actions).to(device)
         rewards_v = torch.tensor(rewards).to(device)
