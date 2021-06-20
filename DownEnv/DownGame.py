@@ -9,11 +9,11 @@ from xvfbwrapper import Xvfb
 from pynput.keyboard import Controller, Key
 from multiprocessing import Pipe, Process
 from transitions import Machine, State
-from .DownConst import ACTIONS, HEIGHT, WIDTH, LOSE_COLOR
+from .DownConst import ACTIONS, TOP, LEFT, HEIGHT, WIDTH, LOSE_COLOR, LOSE_LOCATION
 
 
 def down_client(conn):
-    monitor = {"top": 0, "left": 0, "width": WIDTH, "height": HEIGHT}
+    monitor = {"top": TOP, "left": LEFT, "width": WIDTH, "height": HEIGHT}
 
     def press_and_release(keyboard, keys, holdtime=0.01):
         for key in keys:
@@ -83,14 +83,14 @@ class DownGame(object):
         self.screenshot = self.parent_conn.recv()
         while True:
             self.take_action(2)
-            if not (self.screenshot[225][470] == LOSE_COLOR).all():
+            if not (self.screenshot[LOSE_LOCATION[0]][LOSE_LOCATION[1]] == LOSE_COLOR).all():
                 break
         self.FSM.play()
 
     def observe(self):
         done = False
 
-        if (self.screenshot[225][470] == LOSE_COLOR).all() and self.FSM.is_gaming():
+        if (self.screenshot[LOSE_LOCATION[0]][LOSE_LOCATION[1]] == LOSE_COLOR).all() and self.FSM.is_gaming():
             self.FSM.wait()
             done = True
 
