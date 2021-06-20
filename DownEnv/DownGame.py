@@ -3,6 +3,7 @@ import mss
 import time
 import numpy as np
 import os
+import cv2
 import subprocess
 from xvfbwrapper import Xvfb
 from pynput.keyboard import Controller, Key
@@ -93,7 +94,9 @@ class DownGame(object):
             self.FSM.wait()
             done = True
 
-        return 8, done
+        img = cv2.cvtColor(self.screenshot, cv2.COLOR_RGB2GRAY)
+
+        return img, 1, done
 
     def _update_screenshot(self):
         self.parent_conn.send([])

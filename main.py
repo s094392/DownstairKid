@@ -1,10 +1,16 @@
-import cv2
-from DownEnv.DownGame import DownGame
+import gym
+from DownEnv.DownEnv import DownEnv
 
-if __name__ == "__main__":
-    game = DownGame()
+env = DownEnv()
+for i_episode in range(20):
+    observation = env.reset()
+    t = 0
     while True:
-        game.take_action(2)
-        cv2.imshow("image", game.screenshot)
-        if cv2.waitKey(25) & 0xFF == ord("q"):
-            cv2.destroyAllWindows()
+        t += 1
+        env.render()
+        action = env.action_space.sample()
+        result, reward, done, _ = env.step(action)
+        if done:
+            print("Episode finished after {} timesteps".format(t+1))
+            break
+env.close()

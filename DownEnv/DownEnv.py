@@ -29,8 +29,8 @@ class DownEnv(gym.Env):
 
     def step(self, action):
         self.game.take_action(action)
-        reward, done = self.game.observe()
-        return reward, done
+        result, reward, done = self.game.observe()
+        return result, reward, done, {}
 
     def reset(self):
         self.game.toggle_start()
