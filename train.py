@@ -78,7 +78,7 @@ class Agent:
             _, act_v = torch.max(q_vals_v, dim=1)
             action = int(act_v.item())
 
-        self.env.render()
+        # self.env.render()
         new_state, reward, is_done, _ = self.env.step(action)
         self.total_reward += reward
 
@@ -117,6 +117,13 @@ def train(device):
         frame_idx += 1
         epsilon = max(epsilon*eps_decay, eps_min)
 
+        if agent.env.game.FSM.is_waiting():
+            agent._reset()
+
+        while agent.env.game.FSM.is_waiting():
+            pass
+
+
         reward = agent.play_step(net, epsilon, device=device)
         if reward is not None:
             total_rewards.append(reward)
@@ -135,7 +142,6 @@ def train(device):
                 best_mean_reward = mean_reward
                 if best_mean_reward is not None:
                     print("Best mean reward updated %.3f" % (best_mean_reward))
-            agent._reset()
 
             if mean_reward > MEAN_REWARD_BOUND:
                 print("Solved in %d frames!" % frame_idx)
@@ -161,6 +167,7 @@ def train(device):
         state_action_values = net(states_v).gather(
             1, actions_v.unsqueeze(-1)).squeeze(-1)
 
+        next_states_v = next_states_v.float()
         next_state_values = target_net(next_states_v).max(1)[0]
 
         next_state_values[done_mask] = 0.0

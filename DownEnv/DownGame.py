@@ -2,6 +2,7 @@ import pdb
 import mss
 import time
 import numpy as np
+from time import sleep
 from torchvision import transforms
 import os
 import cv2
@@ -28,6 +29,16 @@ def down_client(conn):
     def start_wine():
         subprocess.Popen([r"wine", r"down.exe"])
         time.sleep(4)
+        echo_arg = os.environ['DISPLAY']
+        echo = subprocess.run(
+            ["echo", echo_arg],
+            stdout=subprocess.PIPE,
+            check=True,
+        )
+
+        display_id = echo.stdout[1:-1]
+        print(int(display_id))
+
         xdp = subprocess.run(
             ["xdotool", "search", "--name", "NS-SHAFT"],
             stdout=subprocess.PIPE,
@@ -52,8 +63,9 @@ def down_client(conn):
         # wait actions
         while True:
             press_flow = conn.recv()
-            for keys in press_flow:
-                press_and_release(keyboard, keys=keys)
+            if press_flow != "UPDATE":
+                for keys in press_flow:
+                    press_and_release(keyboard, keys=keys)
             img = np.array(sct.grab(monitor))
             conn.send(img)
 
@@ -69,12 +81,12 @@ class DownGame(object):
         self.actions = ACTIONS
         self.parent_conn, self.screenshot = self._spawn_down()
         self.FSM = self._init_FSM()
-        print(self.FSM.is_gaming())
+        # print(self.FSM.is_gaming())
         print("-- client ready")
 
     def take_action(self, idx):
         action = self.actions[idx]
-        print(self.FSM.state, action)
+        # print(self.FSM.state, action)
         self.parent_conn.send([action])
         self.screenshot = self.parent_conn.recv()
 
@@ -84,8 +96,10 @@ class DownGame(object):
         self.parent_conn.send([("n",)])
         # self.parent_conn.send([(Key.enter,)])
         self.screenshot = self.parent_conn.recv()
+        self.screenshot = self.parent_conn.recv()
+        self.screenshot = self.parent_conn.recv()
         while True:
-            self.take_action(2)
+            self._update_screenshot()
             if not (self.screenshot[LOSE_LOCATION[0]][LOSE_LOCATION[1]] == LOSE_COLOR).all():
                 break
         self.FSM.play()
@@ -97,6 +111,7 @@ class DownGame(object):
         if (self.screenshot[LOSE_LOCATION[0]][LOSE_LOCATION[1]] == LOSE_COLOR).all() and self.FSM.is_gaming():
             self.FSM.wait()
             done = True
+            return np.zeros(N_PLATFORMS*3+2), -1000, done
 
         player = np.where(self.screenshot == PLAYER_COLOR)
         pikes = np.where(self.screenshot == PLAYFORM_COLOR)
@@ -134,7 +149,7 @@ class DownGame(object):
             return result, 1 + self.player_pos[0], done
 
     def _update_screenshot(self):
-        self.parent_conn.send([])
+        self.parent_conn.send("UPDATE")
         self.screenshot = self.parent_conn.recv()
 
     def _init_FSM(self):
