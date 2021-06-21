@@ -16,14 +16,14 @@ from dqn import DQN
 MEAN_REWARD_BOUND = 99999999999999999999
 
 gamma = 0.99
-batch_size = 16
-replay_size = 50
+batch_size = 32
+replay_size = 100
 learning_rate = 1e-3
-sync_target_frames = 10
-replay_start_size = 50
+sync_target_frames = 20
+replay_start_size = 100
 
-eps_start = 1.0
-eps_decay = .99985
+eps_start = 1
+eps_decay = .9985
 eps_min = 0.02
 
 
@@ -45,8 +45,13 @@ class ExperienceReplay:
         indices = np.random.choice(len(self.buffer), batch_size, replace=False)
         states, actions, rewards, dones, next_states = zip(
             *[self.buffer[idx] for idx in indices])
-        return np.array(states), np.array(actions), np.array(rewards, dtype=np.float32), \
-            np.array(dones, dtype=np.uint8), np.array(next_states)
+        try:
+            return np.array(states), np.array(actions), np.array(rewards, dtype=np.float32), \
+                np.array(dones, dtype=np.uint8), np.array(next_states)
+        except:
+            import pdb
+            pdb.set_trace()
+
 
 
 class Agent:
@@ -62,13 +67,13 @@ class Agent:
     def play_step(self, net, epsilon=0.0, device="cpu"):
 
         done_reward = None
+
+
         if np.random.random() < epsilon:
             action = self.env.action_space.sample()
         else:
-            print(self.state.shape)
             state_a = np.array([self.state], copy=False)
-            state_a = self.state
-            state_v = torch.tensor(state_a).to(device)
+            state_v = torch.tensor(state_a).to(device).float()
             q_vals_v = net(state_v)
             _, act_v = torch.max(q_vals_v, dim=1)
             action = int(act_v.item())
@@ -142,7 +147,7 @@ def train(device):
         batch = buffer.sample(batch_size)
         states, actions, rewards, dones, next_states = batch
         try:
-            states = states.astype('float64')
+            states = states.astype('float32')
         except:
             import pdb
             pdb.set_trace()

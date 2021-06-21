@@ -112,7 +112,6 @@ class DownGame(object):
 
         if len(player[0]) > 0:
             self.player_pos = player[0][0], player[1][0]
-        print(self.player_pos)
 
         items.sort()
         items += [[0,0,0]] * N_PLATFORMS
@@ -123,7 +122,7 @@ class DownGame(object):
 
         items = items.reshape(-1)
 
-        result = np.concatenate((result, items))
+        result = np.concatenate((result, items)).astype("float32")
 
 
         img = cv2.cvtColor(self.screenshot, cv2.COLOR_RGB2GRAY)

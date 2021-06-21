@@ -28,9 +28,7 @@ class DownEnv(gym.Env):
 
     def reset(self):
         self.game.toggle_start()
-        img = cv2.cvtColor(self.game.screenshot, cv2.COLOR_RGB2GRAY)
-        img = transforms.ToTensor()(img).float()
-        return img.numpy()
+        return np.zeros(N_PLATFORMS*3+2)
 
     def render(self, mode="human"):
         cv.imshow("Down game", self.game.screenshot)
