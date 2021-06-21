@@ -111,7 +111,7 @@ class DownGame(object):
         if (self.screenshot[LOSE_LOCATION[0]][LOSE_LOCATION[1]] == LOSE_COLOR).all() and self.FSM.is_gaming():
             self.FSM.wait()
             done = True
-            return np.zeros(N_PLATFORMS*3+2), -1000, done
+            return np.zeros(N_PLATFORMS*3+2), -10, done
 
         player = np.where(self.screenshot == PLAYER_COLOR)
         pikes = np.where(self.screenshot == PLAYFORM_COLOR)
@@ -143,10 +143,7 @@ class DownGame(object):
         img = cv2.cvtColor(self.screenshot, cv2.COLOR_RGB2GRAY)
         img = transforms.ToTensor()(img).float()
 
-        if done:
-            return result, 0, done
-        else:
-            return result, 1 + self.player_pos[0], done
+        return result, 1, done
 
     def _update_screenshot(self):
         self.parent_conn.send("UPDATE")

@@ -23,7 +23,7 @@ sync_target_frames = 20
 replay_start_size = 100
 
 eps_start = 1
-eps_decay = .9985
+eps_decay = .999985
 eps_min = 0.02
 
 
@@ -130,8 +130,8 @@ def train(device):
 
             mean_reward = np.mean(total_rewards[-100:])
 
-            print("%d:  %d games, mean reward %.3f, (epsilon %.2f)" % (
-                frame_idx, len(total_rewards), mean_reward, epsilon))
+            print("%d:  %d games, mean reward %.3f, current reward %.3f (epsilon %.2f)" % (
+                frame_idx, len(total_rewards), mean_reward, reward, epsilon))
 
             writer.add_scalar("epsilon", epsilon, frame_idx)
             writer.add_scalar("reward_100", mean_reward, frame_idx)
