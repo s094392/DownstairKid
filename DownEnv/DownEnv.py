@@ -6,7 +6,7 @@ from gym import spaces
 from torchvision import transforms
 import numpy as np
 from cv2 import cv2 as cv
-from .DownConst import HEIGHT, WIDTH
+from .DownConst import HEIGHT, WIDTH, N_PLATFORMS
 from .DownGame import DownGame
 
 
@@ -16,7 +16,7 @@ class DownEnv(gym.Env):
     def __init__(self):
         super(DownEnv, self).__init__()
         self.observation_space = spaces.Box(
-            low=0, high=255, shape=(HEIGHT, WIDTH, 1), dtype=np.uint8)
+            low=-1, high=max((WIDTH, HEIGHT)), shape=(N_PLATFORMS*3+2, 1), dtype=np.uint8)
         self.reward_range = (-math.inf, math.inf)
         self.action_space = spaces.Discrete(3)
         self.game = DownGame()
