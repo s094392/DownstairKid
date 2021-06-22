@@ -11,20 +11,23 @@ from torch.utils.tensorboard import SummaryWriter
 from DownEnv.DownEnv import DownEnv
 import torch.optim as optim
 from dqn import DQN
+import sys
 
 
 MEAN_REWARD_BOUND = 99999999999999999999
 
+
 gamma = 0.99
-batch_size = 32
-replay_size = 100
-learning_rate = 1e-3
+batch_size = 64
+replay_size = 1000
+learning_rate = 1e-4
 sync_target_frames = 20
-replay_start_size = 100
+replay_start_size = 1000
 
 eps_start = 1
 eps_decay = .999985
 eps_min = 0.02
+filename = "1220"
 
 
 Experience = collections.namedtuple('Experience', field_names=[
@@ -138,7 +141,7 @@ def train(device):
             writer.add_scalar("reward", reward, frame_idx)
 
             if best_mean_reward is None or best_mean_reward < mean_reward:
-                torch.save(net.state_dict(), "Down" + "-best.dat")
+                torch.save(net.state_dict(), filename)
                 best_mean_reward = mean_reward
                 if best_mean_reward is not None:
                     print("Best mean reward updated %.3f" % (best_mean_reward))

@@ -91,17 +91,15 @@ class DownGame(object):
         self.screenshot = self.parent_conn.recv()
 
     def toggle_start(self):
-        self.parent_conn.send([(Key.alt,)])
-        self.parent_conn.send([("f",)])
-        self.parent_conn.send([("n",)])
-        # self.parent_conn.send([(Key.enter,)])
-        self.screenshot = self.parent_conn.recv()
-        self.screenshot = self.parent_conn.recv()
+        sleep(0.1)
+        self.parent_conn.send([("s",)])
         self.screenshot = self.parent_conn.recv()
         while True:
-            self._update_screenshot()
+            self.parent_conn.send([("s",)])
+            self.screenshot = self.parent_conn.recv()
             if not (self.screenshot[LOSE_LOCATION[0]][LOSE_LOCATION[1]] == LOSE_COLOR).all():
                 break
+        sleep(0.01)
         self.FSM.play()
 
 
@@ -143,10 +141,10 @@ class DownGame(object):
         img = cv2.cvtColor(self.screenshot, cv2.COLOR_RGB2GRAY)
         img = transforms.ToTensor()(img).float()
 
-        return result, 1, done
+        return result, 1 + self.player_pos[0] / 100, done
 
     def _update_screenshot(self):
-        self.parent_conn.send("UPDATE")
+        self.parent_conn.send("s")
         self.screenshot = self.parent_conn.recv()
 
     def _init_FSM(self):
