@@ -1,5 +1,5 @@
-# Down
-A DownstairKid AI based on Deep Q-learning.
+# DownstairKid
+A [DownstairKid(NS-SHAFT)](https://www.nagi-p.com/v1/fre/nsshaft.html) AI based on Deep Q-learning.
 
 ## Requirements
 * wine
