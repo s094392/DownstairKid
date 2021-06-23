@@ -1,3 +1,5 @@
+import os
+import cv2
 import gym
 import math
 import random
@@ -11,6 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 from DownEnv.DownEnv import DownEnv
 import torch.optim as optim
 from dqn import DQN
+from DownEnv.DownConst import WIDTH, HEIGHT
 import sys
 
 
@@ -24,10 +27,10 @@ learning_rate = 1e-4
 sync_target_frames = 20
 replay_start_size = 1000
 
-eps_start = 1
+eps_start = 0.02
 eps_decay = .999985
 eps_min = 0.02
-filename = "1220"
+filename = "1220_s3"
 
 
 Experience = collections.namedtuple('Experience', field_names=[
@@ -103,6 +106,8 @@ def train(device):
               env.action_space.n).to(device)
     target_net = DQN([1, obs_shape[0], obs_shape[1]],
                      env.action_space.n).to(device)
+    net.load_state_dict(torch.load("1220"))
+    target_net.load_state_dict(torch.load("1220"))
     writer = SummaryWriter(comment="-" + "Down")
 
     buffer = ExperienceReplay(replay_size)
@@ -115,6 +120,9 @@ def train(device):
     frame_idx = 0
 
     best_mean_reward = None
+    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+    out = cv2.VideoWriter('output.mp4', fourcc, 8 , (WIDTH, HEIGHT))
+    highest_reward = 0
 
     while True:
         frame_idx += 1
@@ -128,13 +136,24 @@ def train(device):
 
 
         reward = agent.play_step(net, epsilon, device=device)
+        img = agent.env.game.screenshot
+        frame = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        out.write(frame)
         if reward is not None:
+            out.release()
+
+            if highest_reward < reward:
+                os.rename("output.mp4", f"{int(reward)}_output.mp4")
+                highest_reward = reward
+                print("Saved highest_reward %.3f" % reward)
+
             total_rewards.append(reward)
 
             mean_reward = np.mean(total_rewards[-100:])
 
-            print("%d:  %d games, mean reward %.3f, current reward %.3f (epsilon %.2f)" % (
-                frame_idx, len(total_rewards), mean_reward, reward, epsilon))
+            print("%d:  %d games, mean reward %.3f, current reward %.3f, highest mean reward %.3f (epsilon %.2f)" % (
+                frame_idx, len(total_rewards), mean_reward, reward, best_mean_reward or 0, epsilon))
 
             writer.add_scalar("epsilon", epsilon, frame_idx)
             writer.add_scalar("reward_100", mean_reward, frame_idx)
@@ -146,6 +165,7 @@ def train(device):
                 if best_mean_reward is not None:
                     print("Best mean reward updated %.3f" % (best_mean_reward))
 
+            out = cv2.VideoWriter('output.mp4', fourcc, 8 , (WIDTH, HEIGHT))
             if mean_reward > MEAN_REWARD_BOUND:
                 print("Solved in %d frames!" % frame_idx)
                 break
