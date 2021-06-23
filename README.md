@@ -1,4 +1,6 @@
 # DownstairKid
+![Preview](https://github.com/s094392/DownstairKid/blob/main/preview.gif)
+
 A [DownstairKid(NS-SHAFT)](https://www.nagi-p.com/v1/fre/nsshaft.html) AI based on Deep Q-learning.
 
 ## Requirements
