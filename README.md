@@ -41,7 +41,7 @@ replay_start_size = 1000
 eps_start = 0.02
 eps_decay = .999985
 eps_min = 0.02
-filename = "1220_s3" # Filename for bast weights
+filename = "1220_s3" # Filename for best weights
 ```
 ### Train
 ```bash
